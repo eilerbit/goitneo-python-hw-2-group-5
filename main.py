@@ -1,5 +1,5 @@
 from datetime import datetime
-from collections import defaultdict
+from collections import defaultdict, UserDict
 
 
 def get_birthdays_per_week(users):
@@ -32,16 +32,21 @@ def get_birthdays_per_week(users):
         print(f"{weekday}: {', '.join(names)}")
 
 
-# Test for TASK_1
-# users = [
-#     {"name": "Bill Gates", "birthday": datetime(1955, 10, 28)},
-#     {"name": "Jan Koum", "birthday": datetime(1976, 2, 24)},
-#     {"name": "Jill Valentine", "birthday": datetime(1974, 11, 30)},
-#     {"name": "Kim Kardashian", "birthday": datetime(1980, 10, 21)},
-#     {"name": "Joe Black", "birthday": datetime(1995, 2, 25)},
-# ]
-#
-# get_birthdays_per_week(users)
+def input_error(func):
+    def inner(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except KeyError:
+            return "No such contact found."
+        except ValueError:
+            return "Give me the correct name and phone please."
+        except IndexError:
+            return "Input is missing some arguments."
+        except Exception as e:
+            return f"Unexpected error: {e}"
+
+    return inner
+
 
 def parse_input(user_input):
     cmd, *args = user_input.split()
@@ -49,44 +54,30 @@ def parse_input(user_input):
     return cmd, args
 
 
+@input_error
 def add_contact(args, contacts):
-    if len(args) == 2:
-        name, phone = args
-        contacts[name] = phone
-        return "Contact added."
-    else:
-        return "Invalid command format. Please use: add [name] [phone]"
+    name, phone = args
+    contacts[name] = phone
+    return "Contact added."
 
 
+@input_error
 def change_contact(args, contacts):
-    if len(args) == 2:
-        name, new_phone = args
-        if name in contacts:
-            contacts[name] = new_phone
-            return "Contact updated."
-        else:
-            return "Contact not found."
-    else:
-        return "Invalid command format. Please use: change [name] [new_phone]"
+    name, new_phone = args
+    contacts[name] = new_phone
+    return "Contact updated."
 
 
+@input_error
 def show_phone(args, contacts):
-    if len(args) == 1:
-        name = args[0]
-        if name in contacts:
-            return contacts[name]
-        else:
-            return "Contact not found."
-    else:
-        return "Invalid command format. Please use: phone [name]"
+    name = args[0]
+    return contacts[name]
 
 
+@input_error
 def show_all(contacts):
-    if contacts:
-        for name, phone in contacts.items():
-            print(f"{name}: {phone}")
-    else:
-        print("No contacts found.")
+    for name, phone in contacts.items():
+        print(f"{name}: {phone}")
 
 
 def main():
